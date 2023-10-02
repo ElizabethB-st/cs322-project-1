@@ -23,6 +23,8 @@ log = logging.getLogger(__name__)
 import socket    # Basic TCP/IP communication on the internet
 import _thread   # Response computation runs concurrently with main program
 
+import os
+
 
 def listen(portnum):
     """
@@ -88,11 +90,16 @@ def respond(sock):
     request = str(request, encoding='utf-8', errors='strict')
     log.info("--- Received request ----")
     log.info("Request was {}\n***\n".format(request))
-
+    # log.info("current working directory: {0}".format(os.getcwd()))
     parts = request.split()
+
+    page = open('trivia.html', 'r')
+    css = open('trivia.css', 'r')
+
     if len(parts) > 1 and parts[0] == "GET":
         transmit(STATUS_OK, sock)
-        transmit(CAT, sock)
+        transmit(page.read(), sock)
+        transmit(css.read(), sock)
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
@@ -100,6 +107,8 @@ def respond(sock):
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
+    page.close()
+    css.close()
     return
 
 
@@ -138,6 +147,7 @@ def get_options():
 def main():
     options = get_options()
     port = options.PORT
+    os.chdir(options.DOCROOT)  # gets and changes to the docroot directory from config file
     if options.DEBUG:
         log.setLevel(logging.DEBUG)
     sock = listen(port)
