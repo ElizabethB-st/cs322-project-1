@@ -55,12 +55,34 @@ def serve(sock, func):
         _thread.start_new_thread(func, (clientsocket,))
 
 
-# Error response text
+# Error response messages
 NOT_FOUND = """
-    404 Not Found
+    <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+    <html> <head>
+    <title>404 Not Found</title>
+    </head>
+
+    <body>
+    <h1>404 Not Found</h1>
+    <p>File doesn't exist
+    </p>
+
+    </body>
+    </html>
 """
 FORBIDDEN = """
-    403 Forbidden
+    <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+    <html> <head>
+    <title>403 Forbidden</title>
+    </head>
+
+    <body>
+    <h1>403 Forbidden</h1>
+    <p>Command not allowed
+    </p>
+
+    </body>
+    </html>
 """
 
 # HTTP response codes, as the strings we will actually send.
