@@ -99,11 +99,12 @@ def respond(sock):
             valid_file_names.append(file)
 
     if len(parts) > 1 and parts[0] == "GET":
-        transmit(STATUS_OK, sock)
+        #transmit(STATUS_OK, sock)
         # gets the name of the requested file
         file_name = parts[1].strip("/")
         # serves the file if its .html or .css
         if file_name in valid_file_names:
+            transmit(STATUS_OK, sock)
             page = open(file_name, 'r')
             transmit(page.read(), sock)
             page.close()
