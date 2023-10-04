@@ -5,12 +5,6 @@
   This trivial implementation is not robust:  We have omitted decent
   error handling and many other things to keep the illustration as simple
   as possible.
-
-  FIXME:
-  Currently this program always serves an ascii graphic of a cat.
-  Change it to serve files if they end with .html or .css, and are
-  located in ./pages  (where '.' is the directory from which this
-  program is run).
 """
 
 import config    # Configure from .ini files and command line
@@ -61,13 +55,12 @@ def serve(sock, func):
         _thread.start_new_thread(func, (clientsocket,))
 
 
-##
-# Starter version only serves cat pictures. In fact, only a
-# particular cat picture.  This one.
-##
-CAT = """
-     ^ ^
-   =(   )=
+# Error response text
+NOT_FOUND = """
+    404 Not Found
+"""
+FORBIDDEN = """
+    403 Forbidden
 """
 
 # HTTP response codes, as the strings we will actually send.
@@ -83,7 +76,6 @@ STATUS_NOT_IMPLEMENTED = "HTTP/1.0 401 Not Implemented\n\n"
 def respond(sock):
     """
     This server responds only to GET requests (not PUT, POST, or UPDATE).
-    Any valid GET request is answered with an ascii graphic of a cat.
     """
     sent = 0
     request = sock.recv(1024)  # We accept only short requests
@@ -95,19 +87,30 @@ def respond(sock):
     # get all the valid files to display
     valid_file_names = []
     for file in os.listdir():
-        if (file.endswith(".html") or file.endswith(".css")):
-            valid_file_names.append(file)
+        valid_file_names.append(file)
 
     if len(parts) > 1 and parts[0] == "GET":
-        #transmit(STATUS_OK, sock)
         # gets the name of the requested file
         file_name = parts[1].strip("/")
-        # serves the file if its .html or .css
-        if file_name in valid_file_names:
+        # if there is an illegal character (~ and ..)
+        # will respond with error 403 code
+        if ("~" in file_name or ".." in file_name):
+            transmit(STATUS_FORBIDDEN, sock)
+            transmit(FORBIDDEN, sock)
+        # serves the file if its in the DOCROOT
+        elif file_name in valid_file_names:
             transmit(STATUS_OK, sock)
             page = open(file_name, 'r')
             transmit(page.read(), sock)
             page.close()
+        # if filename is not in the DOCROOT respond with 404
+        elif (file_name not in valid_file_names and len(file_name) > 0):
+            transmit(STATUS_NOT_FOUND, sock)
+            transmit(NOT_FOUND, sock)
+        # empty requests aren't allowed
+        elif (len(file_name) < 1):
+            transmit(STATUS_FORBIDDEN, sock)
+            transmit(FORBIDDEN, sock)
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
