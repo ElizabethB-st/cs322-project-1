@@ -98,8 +98,10 @@ def respond(sock):
 
     if len(parts) > 1 and parts[0] == "GET":
         transmit(STATUS_OK, sock)
-        transmit(page.read(), sock)
-        transmit(css.read(), sock)
+        if parts[1] == "/trivia.html":
+            transmit(page.read(), sock)
+        if parts[1] == "/trivia.css":
+            transmit(css.read(), sock)
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
