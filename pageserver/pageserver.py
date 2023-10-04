@@ -85,6 +85,16 @@ FORBIDDEN = """
     </html>
 """
 
+##
+# Starter version only serves cat pictures. In fact, only a
+# particular cat picture.  This one.
+##
+CAT = """
+     ^ ^
+   =(   )=
+"""
+
+
 # HTTP response codes, as the strings we will actually send.
 # See:  https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
 # or    http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
@@ -129,10 +139,10 @@ def respond(sock):
         elif (file_name not in valid_file_names and len(file_name) > 0):
             transmit(STATUS_NOT_FOUND, sock)
             transmit(NOT_FOUND, sock)
-        # empty requests aren't allowed
+        # empty requests are given an picture of a cat
         elif (len(file_name) < 1):
-            transmit(STATUS_FORBIDDEN, sock)
-            transmit(FORBIDDEN, sock)
+            transmit(STATUS_OK, sock)
+            transmit(CAT, sock)
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
