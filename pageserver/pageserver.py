@@ -90,18 +90,23 @@ def respond(sock):
     request = str(request, encoding='utf-8', errors='strict')
     log.info("--- Received request ----")
     log.info("Request was {}\n***\n".format(request))
-    # log.info("current working directory: {0}".format(os.getcwd()))
     parts = request.split()
 
-    page = open('trivia.html', 'r')
-    css = open('trivia.css', 'r')
+    # get all the valid files to display
+    valid_file_names = []
+    for file in os.listdir():
+        if (file.endswith(".html") or file.endswith(".css")):
+            valid_file_names.append(file)
 
     if len(parts) > 1 and parts[0] == "GET":
         transmit(STATUS_OK, sock)
-        if parts[1] == "/trivia.html":
+        # gets the name of the requested file
+        file_name = parts[1].strip("/")
+        # serves the file if its .html or .css
+        if file_name in valid_file_names:
+            page = open(file_name, 'r')
             transmit(page.read(), sock)
-        if parts[1] == "/trivia.css":
-            transmit(css.read(), sock)
+            page.close()
     else:
         log.info("Unhandled request: {}".format(request))
         transmit(STATUS_NOT_IMPLEMENTED, sock)
@@ -109,8 +114,6 @@ def respond(sock):
 
     sock.shutdown(socket.SHUT_RDWR)
     sock.close()
-    page.close()
-    css.close()
     return
 
 
